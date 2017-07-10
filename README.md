@@ -1,2 +1,2 @@
 # google_tag_boss
-managing google tag manager
+Upload your GTM workspace JSON and export workspace details in csv file.
