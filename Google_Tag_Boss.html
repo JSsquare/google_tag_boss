@@ -1,0 +1,124 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<div class="container">
+ <div class="jumbotron" style="text-align: center">
+    <p>Upload Your GTM Workspace File Below</p>
+    <label  for="my-file-selector">
+        <input type="file" id="file-input" class="btn btn-primary" />
+        <pre id="file-content"></pre>
+    </label>
+ </div>
+</div>
+
+<script>
+
+var tagInfoArray = [
+     {
+            "Firing Trigger 1": " ",
+            "Firing Trigger 2": " ",
+            "Firing Trigger 3": " ",
+            "Firing Trigger 4": " ",         
+            "Tag Name": " "
+    }
+];                
+    
+function convertArrayOfObjectsToCSV(args) {  
+        var result, ctr, keys, columnDelimiter, lineDelimiter, data;
+
+        data = args.data || null;
+        if (data == null || !data.length) {
+            return null;
+        }
+
+        columnDelimiter = args.columnDelimiter || ',';
+        lineDelimiter = args.lineDelimiter || '\n';
+
+        keys = Object.keys(data[0]);
+        
+        result = '';
+        result += keys.join(columnDelimiter);
+        result += lineDelimiter;
+
+        data.forEach(function(item) {
+            ctr = 0;           
+            keys.forEach(function(key) {
+                if (ctr > 0) result += columnDelimiter;
+                result += item[key] == undefined ? "N/A" : item[key];
+                ctr++;
+            });
+            result += lineDelimiter;
+        });
+        return result;
+}
+    
+function downloadCSV(args) {  
+        var data, filename, link;
+        var csv = convertArrayOfObjectsToCSV({
+            data: tagInfoArray
+        });
+        if (csv == null) return;
+
+        filename = args.filename || 'google_tag_boss.csv';
+
+        if (!csv.match(/^data:text\/csv/i)) {
+            csv = 'data:text/csv;charset=utf-8,' + csv;
+        }
+        data = encodeURI(csv);
+
+        link = document.createElement('a');
+        link.setAttribute('href', data);
+        link.setAttribute('download', filename);
+        link.click();
+}
+
+
+    
+    
+function readSingleFile(e) {
+  var file = e.target.files[0];
+  if (!file) {
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var contents = e.target.result;
+    var containerDetails = JSON.parse(contents).containerVersion;             
+          
+      processTagData(containerDetails);  
+    displayContents(tagInfoArray);
+      downloadCSV(tagInfoArray);    
+  };
+  reader.readAsText(file);
+}
+
+function triggers(triggerDetails){
+        var triggerList = {};
+        triggerDetails.forEach(function(t){
+          triggerList[t.triggerId] = t.name;
+        });        
+        return triggerList;    
+}    
+
+    
+function displayContents(contents) {
+  var element = document.getElementById('file-content');
+  element.innerHTML = contents;
+}    
+
+function processTagData(tagData){     
+  tagData.tag.forEach(function(t){
+      var thisTag = {};
+      var triggerCount = 1;
+      if(t.firingTriggerId){
+        for(trgr in t.firingTriggerId){
+            thisTag["Firing Trigger " + triggerCount++] = triggers(tagData.trigger)[t.firingTriggerId[trgr]];            
+        }
+      }      
+      thisTag["Tag Name"] = t.name;   
+      tagInfoArray.push(thisTag);      
+  });    
+}    
+    
+document.getElementById('file-input').addEventListener('change', readSingleFile, false);
+    
+</script>
