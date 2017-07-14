@@ -13,13 +13,7 @@
 <script>
 
 var tagInfoArray = [
-     {
-            "Firing Trigger 1": " ",
-            "Firing Trigger 2": " ",
-            "Firing Trigger 3": " ",
-            "Firing Trigger 4": " ",         
-            "Tag Name": " "
-    }
+    
 ];                
     
 function convertArrayOfObjectsToCSV(args) {  
@@ -33,7 +27,7 @@ function convertArrayOfObjectsToCSV(args) {
         columnDelimiter = args.columnDelimiter || ',';
         lineDelimiter = args.lineDelimiter || '\n';
 
-        keys = Object.keys(data[0]);
+        keys = ["TAG NAME", "TRIGGER 1", "TRIGGER 2", "TRIGGER 3", "TRIGGER 4", "TAG TYPE"];
         
         result = '';
         result += keys.join(columnDelimiter);
@@ -85,7 +79,7 @@ function readSingleFile(e) {
     var containerDetails = JSON.parse(contents).containerVersion;             
           
       processTagData(containerDetails);  
-    displayContents(tagInfoArray);
+      displayContents();
       downloadCSV(tagInfoArray);    
   };
   reader.readAsText(file);
@@ -100,23 +94,24 @@ function triggers(triggerDetails){
 }    
 
     
-function displayContents(contents) {
+function displayContents() {
   var element = document.getElementById('file-content');
-  element.innerHTML = contents;
+  element.innerHTML = 'Thanks';
 }    
 
 function processTagData(tagData){     
   tagData.tag.forEach(function(t){
       var thisTag = {};
       var triggerCount = 1;
+      thisTag["TAG TYPE"] = t.type.toUpperCase();
+      thisTag["TAG NAME"] = t.name;      
       if(t.firingTriggerId){
         for(trgr in t.firingTriggerId){
-            thisTag["Firing Trigger " + triggerCount++] = triggers(tagData.trigger)[t.firingTriggerId[trgr]];            
+            thisTag["TRIGGER " + triggerCount++] = triggers(tagData.trigger)[t.firingTriggerId[trgr]];            
         }
-      }      
-      thisTag["Tag Name"] = t.name;   
-      tagInfoArray.push(thisTag);      
-  });    
+      }
+      tagInfoArray.push(thisTag);
+  });
 }    
     
 document.getElementById('file-input').addEventListener('change', readSingleFile, false);
