@@ -5,16 +5,14 @@
     <p>Upload Your GTM Workspace File Below</p>
     <label  for="my-file-selector">
         <input type="file" id="file-input" class="btn btn-primary" />
-        <pre id="file-content"></pre>
-    </label>
+    </label>        
  </div>
 </div>
+    <pre id="download-tag"></pre>
 
 <script>
 
-var tagInfoArray = [
-    
-];                
+var tagInfoArray = [ ];                
     
 function convertArrayOfObjectsToCSV(args) {  
         var result, ctr, keys, columnDelimiter, lineDelimiter, data;
@@ -76,11 +74,8 @@ function readSingleFile(e) {
   var reader = new FileReader();
   reader.onload = function(e) {
     var contents = e.target.result;
-    var containerDetails = JSON.parse(contents).containerVersion;             
-          
-      processTagData(containerDetails);  
-      displayContents();
-      downloadCSV(tagInfoArray);    
+    var containerDetails = JSON.parse(contents).containerVersion;                       
+      displayContents(containerDetails);
   };
   reader.readAsText(file);
 }
@@ -94,10 +89,16 @@ function triggers(triggerDetails){
 }    
 
     
-function displayContents() {
-  var element = document.getElementById('file-content');
-  element.innerHTML = 'Thanks';
-}    
+function displayContents(containerDetails) {
+  var element = document.getElementById('download-tag');
+  element.innerHTML = '<input type="button" id="downloadTags" class="btn btn-primary" value="Download Tag Details"/>'; 
+  document.getElementById('downloadTags').onclick = function () {
+    processTagData(containerDetails);
+  }; 
+}
+    
+  
+  
 
 function processTagData(tagData){     
   tagData.tag.forEach(function(t){
@@ -112,6 +113,7 @@ function processTagData(tagData){
       }
       tagInfoArray.push(thisTag);
   });
+  downloadCSV(tagInfoArray);
 }    
     
 document.getElementById('file-input').addEventListener('change', readSingleFile, false);
